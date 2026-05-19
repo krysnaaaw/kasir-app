@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Kasir Warung Wicak</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <!-- BARCODE -->
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+
+    <!-- SCRIPT -->
+    <script src="script.js" defer></script>
+
+</head>
+
+<body>
+
+    <!-- LOGIN -->
+    <div
+        class="login-box"
+        id="login-box"
+    >
+
+        <h2>Login Kasir</h2>
+
+        <input
+            type="text"
+            id="username"
+            placeholder="Username"
+        >
+
+        <input
+            type="password"
+            id="password"
+            placeholder="Password"
+        >
+
+        <button onclick="login()">
+            Login
+        </button>
+
+    </div>
+
+
+    <!-- APP -->
+    <div
+        class="container"
+        id="app"
+        style="display:none;"
+    >
+
+        <!-- HEADER -->
+        <div class="top-bar">
+
+            <div>
+
+                <h1>
+                    Kasir Warung Wicak
+                </h1>
+
+                <p id="role-info"></p>
+
+            </div>
+
+            <button
+                class="logout-btn"
+                onclick="logout()"
+            >
+                Logout
+            </button>
+
+        </div>
+
+
+        <!-- ADMIN PANEL -->
+        <div
+            class="form-container"
+            id="admin-panel"
+        >
+
+            <div class="form-group">
+
+                <label>Barcode</label>
+
+                <input
+                    type="text"
+                    id="item-barcode"
+                    placeholder="Barcode otomatis"
+                >
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Nama Barang</label>
+
+                <input
+                    type="text"
+                    id="item-name"
+                    placeholder="Nama barang"
+                >
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Harga</label>
+
+                <input
+                    type="number"
+                    id="item-price"
+                    placeholder="Harga"
+                >
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Stok</label>
+
+                <input
+                    type="number"
+                    id="item-stock"
+                    placeholder="Stok"
+                >
+
+            </div>
+
+        </div>
+
+
+        <!-- BUTTON -->
+        <button id="add-item">
+
+            Tambah Barang
+
+        </button>
+
+
+        <!-- BARCODE -->
+        <div class="barcode-box">
+
+            <h3>
+                Preview Barcode
+            </h3>
+
+            <svg id="barcode-preview"></svg>
+
+            <p id="barcode-text"></p>
+
+        </div>
+
+
+        <!-- TABLE -->
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>Barcode</th>
+
+                        <th>Nama Barang</th>
+
+                        <th>Harga</th>
+
+                        <th>Stok</th>
+
+                        <th>Aksi</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="cart-items"></tbody>
+
+            </table>
+
+        </div>
+
+
+        <!-- KERANJANG -->
+        <div
+            class="cart-box"
+            id="cart-box"
+        >
+
+            <h2>
+                Keranjang
+            </h2>
+
+            <ul id="keranjang"></ul>
+
+            <!-- CHECKOUT -->
+            <button
+                id="checkout-btn"
+                onclick="checkout()"
+            >
+
+                Checkout
+
+            </button>
+
+        </div>
+
+
+        <!-- SUMMARY -->
+        <div
+            class="summary-box"
+            id="summary-box"
+        >
+
+            <p>
+
+                Subtotal :
+
+                <span id="subtotal-price">
+
+                    Rp 0
+
+                </span>
+
+            </p>
+
+            <p>
+
+                Diskon :
+
+                <span id="discount-price">
+
+                    Rp 0
+
+                </span>
+
+            </p>
+
+            <p>
+
+                PPN 11% :
+
+                <span id="tax-price">
+
+                    Rp 0
+
+                </span>
+
+            </p>
+
+            <h2>
+
+                Total :
+
+                <span id="total-payment">
+
+                    Rp 0
+
+                </span>
+
+            </h2>
+
+        </div>
+
+
+        <!-- STRUK -->
+        <div
+            class="receipt-box"
+            id="receipt-box"
+        >
+
+            <h2>
+
+                Struk Belanja
+
+            </h2>
+
+            <div id="receipt-content">
+
+                <p>
+
+                    Belum ada transaksi
+
+                </p>
+
+            </div>
+
+            <button
+                onclick="printStruk()"
+            >
+
+                Print Struk
+
+            </button>
+
+        </div>
+
+    </div>
+
+</body>
+</html>
