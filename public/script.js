@@ -187,7 +187,7 @@ async function tambahBarang() {
     };
 
     await fetch(
-        "http://localhost:3000/tambah-barang",
+        "https://kasir-production.up.railway.app/tambah-barang",
         {
             method: "POST",
 
@@ -217,7 +217,7 @@ async function tampilkanData() {
 
     const response =
     await fetch(
-        "http://localhost:3000/barang"
+        "https://kasir-production.up.railway.app/barang"
     );
 
     const barang =
@@ -346,7 +346,7 @@ function previewBarcode(
 async function hapusBarang(id) {
 
     await fetch(
-        `http://localhost:3000/hapus-barang/${id}`,
+        `https://kasir-production.up.railway.app/hapus-barang/${id}`,
         {
             method: "DELETE"
         }
@@ -554,7 +554,7 @@ async function checkout() {
 
     // CHECKOUT DATABASE
     await fetch(
-        "http://localhost:3000/checkout",
+        "https://kasir-production.up.railway.app/checkout",
         {
             method:"POST",
 
@@ -573,7 +573,7 @@ async function checkout() {
     // MIDTRANS
     const response =
     await fetch(
-        "http://localhost:3000/payment",
+        "https://kasir-production.up.railway.app/payment",
         {
             method:"POST",
 

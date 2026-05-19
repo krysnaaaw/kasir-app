@@ -3,8 +3,7 @@ require("dotenv").config();
 const express = require("express");
 const mysql = require("mysql2");
 const cors = require("cors");
-const midtransClient =
-require("midtrans-client");
+const midtransClient = require("midtrans-client");
 
 const app = express();
 
@@ -13,35 +12,57 @@ app.use(express.json());
 app.use(express.static("public"));
 
 
-// MYSQL
+// ==========================
+// MYSQL CONNECTION
+// ==========================
 const db = mysql.createConnection({
-
-    host: "localhost",
-    user: "root",
-    password: "",
-    database: "kasir_sekolah"
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    port: process.env.DB_PORT
 });
 
 db.connect((err) => {
-
     if (err) {
-
-        console.log(err);
+        console.log("MySQL Error:", err);
         return;
     }
-
     console.log("MySQL Connected");
 });
 
 
+// ==========================
+// AUTO CREATE TABLE
+// ==========================
+db.query(`
+CREATE TABLE IF NOT EXISTS barang (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    barcode VARCHAR(100),
+    nama VARCHAR(255),
+    harga INT,
+    stok INT
+)
+`);
+
+db.query(`
+CREATE TABLE IF NOT EXISTS transaksi (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    barcode VARCHAR(100),
+    nama VARCHAR(255),
+    harga INT,
+    jumlah INT,
+    subtotal INT
+)
+`);
+
+
+// ==========================
 // MIDTRANS
-let snap =
-new midtransClient.Snap({
-
+// ==========================
+let snap = new midtransClient.Snap({
     isProduction: false,
-
-    serverKey:
-    "process.env.MIDTRANS_SERVER_KEY",
+    serverKey: process.env.MIDTRANS_SERVER_KEY
 });
 
 
@@ -49,36 +70,20 @@ new midtransClient.Snap({
 // TAMBAH BARANG
 // ==========================
 app.post("/tambah-barang", (req, res) => {
-
-    const {
-        barcode,
-        nama,
-        harga,
-        stok
-    } = req.body;
+    const { barcode, nama, harga, stok } = req.body;
 
     const sql = `
-        INSERT INTO barang
-        (barcode, nama, harga, stok)
+        INSERT INTO barang (barcode, nama, harga, stok)
         VALUES (?, ?, ?, ?)
     `;
 
-    db.query(
-        sql,
-        [barcode, nama, harga, stok],
-        (err, result) => {
-
-            if (err) {
-
-                console.log(err);
-                return;
-            }
-
-            res.send(
-                "Barang ditambahkan"
-            );
+    db.query(sql, [barcode, nama, harga, stok], (err) => {
+        if (err) {
+            console.log(err);
+            return res.status(500).send("Error tambah barang");
         }
-    );
+        res.send("Barang ditambahkan");
+    });
 });
 
 
@@ -86,52 +91,29 @@ app.post("/tambah-barang", (req, res) => {
 // GET BARANG
 // ==========================
 app.get("/barang", (req, res) => {
-
-    db.query(
-        "SELECT * FROM barang ORDER BY id DESC",
-
-        (err, result) => {
-
-            if (err) {
-
-                console.log(err);
-                return;
-            }
-
-            res.json(result);
+    db.query("SELECT * FROM barang ORDER BY id DESC", (err, result) => {
+        if (err) {
+            console.log(err);
+            return res.status(500).send("Error get barang");
         }
-    );
+        res.json(result);
+    });
 });
 
 
 // ==========================
 // HAPUS BARANG
 // ==========================
-app.delete(
-"/hapus-barang/:id",
+app.delete("/hapus-barang/:id", (req, res) => {
+    const id = req.params.id;
 
-(req, res) => {
-
-    const id =
-    req.params.id;
-
-    db.query(
-        "DELETE FROM barang WHERE id = ?",
-        [id],
-
-        (err, result) => {
-
-            if (err) {
-
-                console.log(err);
-                return;
-            }
-
-            res.send(
-                "Barang dihapus"
-            );
+    db.query("DELETE FROM barang WHERE id = ?", [id], (err) => {
+        if (err) {
+            console.log(err);
+            return res.status(500).send("Error hapus barang");
         }
-    );
+        res.send("Barang dihapus");
+    });
 });
 
 
@@ -139,107 +121,72 @@ app.delete(
 // CHECKOUT
 // ==========================
 app.post("/checkout", (req, res) => {
-
-    const keranjang =
-    req.body;
+    const keranjang = req.body;
 
     keranjang.forEach((item) => {
 
-        // TRANSAKSI
-        db.query(
-            `
+        db.query(`
             INSERT INTO transaksi
-            (barcode,nama,harga,jumlah,subtotal)
-
+            (barcode, nama, harga, jumlah, subtotal)
             VALUES (?, ?, ?, ?, ?)
-            `,
+        `, [
+            item.barcode,
+            item.nama,
+            item.harga,
+            item.jumlah,
+            item.subtotal
+        ]);
 
-            [
-                item.barcode,
-                item.nama,
-                item.harga,
-                item.jumlah,
-                item.subtotal
-            ]
-        );
-
-        // UPDATE STOK
-        db.query(
-            `
+        db.query(`
             UPDATE barang
             SET stok = stok - ?
             WHERE id = ?
-            `,
-
-            [
-                item.jumlah,
-                item.id
-            ]
-        );
+        `, [
+            item.jumlah,
+            item.id
+        ]);
     });
 
-    res.send(
-        "Checkout berhasil"
-    );
+    res.send("Checkout berhasil");
 });
 
 
 // ==========================
-// PAYMENT
+// PAYMENT MIDTRANS
 // ==========================
 app.post("/payment", async (req, res) => {
-
     try {
-
-        const total =
-        req.body.total;
-
-        console.log(total);
+        const total = req.body.total;
 
         const parameter = {
-
             transaction_details: {
-
-                order_id:
-                "ORDER-" + Date.now(),
-
-                gross_amount:
-                Math.round(total)
+                order_id: "ORDER-" + Date.now(),
+                gross_amount: Math.round(total)
             }
         };
 
-        const transaction =
-        await snap.createTransaction(
-            parameter
-        );
+        const transaction = await snap.createTransaction(parameter);
 
         res.json({
-
-            token:
-            transaction.token,
-
-            redirect_url:
-            transaction.redirect_url
+            token: transaction.token,
+            redirect_url: transaction.redirect_url
         });
 
-    } catch(error) {
-
-        console.log(error);
+    } catch (error) {
+        console.log("Payment Error:", error);
 
         res.status(500).json({
-            error:
-            "Payment gagal"
+            error: "Payment gagal"
         });
     }
 });
 
 
 // ==========================
-// SERVER
+// START SERVER (FIX)
 // ==========================
-app.listen(3000, () => {
+const PORT = process.env.PORT || 3000;
 
-    console.log(
-        "Server jalan di http://localhost:3000"
-    );
+app.listen(PORT, () => {
+    console.log(`Server jalan di port ${PORT}`);
 });
