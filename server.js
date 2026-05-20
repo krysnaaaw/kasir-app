@@ -11,6 +11,7 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(express.static("public"));
 
 // ==========================
 // ERROR HANDLER
@@ -74,13 +75,6 @@ CREATE TABLE IF NOT EXISTS transaksi (
 let snap = new midtransClient.Snap({
   isProduction: false,
   serverKey: process.env.MIDTRANS_SERVER_KEY
-});
-
-// ==========================
-// ROOT
-// ==========================
-app.get("/", (req, res) => {
-  res.send("Backend aktif 🚀");
 });
 
 // ==========================
