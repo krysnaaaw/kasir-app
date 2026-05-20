@@ -1,4 +1,4 @@
-const API_URL = "https://kasir-app-production-777.up.railway.app/";
+const API_URL = "https://kasir-app-production-777.up.railway.app";
 
 let currentRole = "";
 let keranjang = [];
