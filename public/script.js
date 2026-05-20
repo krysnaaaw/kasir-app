@@ -130,7 +130,7 @@ async function tambahBarang() {
 
     try {
 
-        const response = await fetch(`${API_URL}tambah-barang`, {
+        const response = await fetch(`${API_URL}/tambah-barang`, {
             method: "POST",
 
             headers: {
@@ -166,7 +166,7 @@ async function tampilkanData() {
 
     try {
 
-        const response = await fetch(`${API_URL}barang`);
+        const response = await fetch(`${API_URL}/barang`);
 
         if (!response.ok) {
             console.log("API Error");
@@ -276,7 +276,7 @@ function previewBarcode(barcode) {
 // ==========================
 async function hapusBarang(id) {
 
-    await fetch(`${API_URL}hapus-barang/${id}`, {
+    await fetch(`${API_URL}/hapus-barang/${id}`, {
         method: "DELETE"
     });
 
@@ -418,7 +418,7 @@ async function checkout() {
 
     try {
 
-        await fetch(`${API_URL}checkout`, {
+        await fetch(`${API_URL}/checkout`, {
             method: "POST",
 
             headers: {
@@ -428,7 +428,7 @@ async function checkout() {
             body: JSON.stringify(keranjang)
         });
 
-        const response = await fetch(`${API_URL}payment`, {
+        const response = await fetch(`${API_URL}/payment`, {
             method: "POST",
 
             headers: {
