@@ -1,4 +1,4 @@
-// script.js
+const API_URL = "https://kasir-production.up.railway.app";
 
 let currentRole = "";
 let keranjang = [];
@@ -22,81 +22,52 @@ const users = [
 // ==========================
 function login() {
 
-    const username =
-    document.getElementById(
-        "username"
-    ).value;
+    const username = document.getElementById("username").value;
 
-    const password =
-    document.getElementById(
-        "password"
-    ).value;
+    const password = document.getElementById("password").value;
 
-    const user =
-    users.find(u =>
+    const user = users.find(u =>
         u.username === username &&
         u.password === password
     );
 
     if (!user) {
-
         alert("Login gagal");
         return;
     }
 
     currentRole = user.role;
 
-    localStorage.setItem(
-        "role",
-        user.role
-    );
+    localStorage.setItem("role", user.role);
 
     masukAplikasi();
 }
 
 function masukAplikasi() {
 
-    document.getElementById(
-        "login-box"
-    ).style.display = "none";
+    document.getElementById("login-box").style.display = "none";
 
-    document.getElementById(
-        "app"
-    ).style.display = "block";
+    document.getElementById("app").style.display = "block";
 
-    document.getElementById(
-        "role-info"
-    ).innerText =
+    document.getElementById("role-info").innerText =
     `Login sebagai ${currentRole}`;
 
     // USER
     if (currentRole === "user") {
 
-        document.getElementById(
-            "admin-panel"
-        ).style.display = "none";
+        document.getElementById("admin-panel").style.display = "none";
 
-        document.getElementById(
-            "add-item"
-        ).style.display = "none";
+        document.getElementById("add-item").style.display = "none";
     }
 
     // ADMIN
-    else if (
-        currentRole === "admin"
-    ) {
+    else if (currentRole === "admin") {
 
-        document.getElementById(
-            "cart-box"
-        ).style.display = "none";
+        document.getElementById("cart-box").style.display = "none";
 
-        document.querySelector(
-            ".summary-box"
-        ).style.display = "none";
+        document.querySelector(".summary-box").style.display = "none";
 
-        document.getElementById(
-            "receipt-box"
-        ).style.display = "none";
+        document.getElementById("receipt-box").style.display = "none";
     }
 
     tampilkanData();
@@ -104,9 +75,7 @@ function masukAplikasi() {
 
 function logout() {
 
-    localStorage.removeItem(
-        "role"
-    );
+    localStorage.removeItem("role");
 
     location.reload();
 }
@@ -116,7 +85,6 @@ function logout() {
 // GENERATE BARCODE
 // ==========================
 function generateBarcode() {
-
     return "BRG-" + Date.now();
 }
 
@@ -126,55 +94,29 @@ function generateBarcode() {
 // ==========================
 document
 .getElementById("add-item")
-.addEventListener(
-    "click",
-    tambahBarang
-);
+.addEventListener("click", tambahBarang);
 
 async function tambahBarang() {
 
-    const barcodeInput =
-    document.getElementById(
-        "item-barcode"
-    );
+    const barcodeInput = document.getElementById("item-barcode");
 
-    const nameInput =
-    document.getElementById(
-        "item-name"
-    );
+    const nameInput = document.getElementById("item-name");
 
-    const priceInput =
-    document.getElementById(
-        "item-price"
-    );
+    const priceInput = document.getElementById("item-price");
 
-    const stockInput =
-    document.getElementById(
-        "item-stock"
-    );
+    const stockInput = document.getElementById("item-stock");
 
-    let barcode =
-    barcodeInput.value ||
-    generateBarcode();
+    let barcode = barcodeInput.value || generateBarcode();
 
-    let nama =
-    nameInput.value;
+    let nama = nameInput.value;
 
-    let harga =
-    parseInt(priceInput.value);
+    let harga = parseInt(priceInput.value);
 
-    let stok =
-    parseInt(stockInput.value);
+    let stok = parseInt(stockInput.value);
 
-    if (
-        nama === "" ||
-        isNaN(harga) ||
-        isNaN(stok)
-    ) {
+    if (nama === "" || isNaN(harga) || isNaN(stok)) {
 
-        alert(
-            "Isi data dengan benar"
-        );
+        alert("Isi data dengan benar");
 
         return;
     }
@@ -186,27 +128,34 @@ async function tambahBarang() {
         stok
     };
 
-    await fetch(
-        "https://kasir-production.up.railway.app/tambah-barang",
-        {
+    try {
+
+        const response = await fetch(`${API_URL}/tambah-barang`, {
             method: "POST",
 
             headers: {
-                "Content-Type":
-                "application/json"
+                "Content-Type": "application/json"
             },
 
-            body:
-            JSON.stringify(data)
+            body: JSON.stringify(data)
+        });
+
+        if (!response.ok) {
+            alert("Gagal tambah barang");
+            return;
         }
-    );
 
-    tampilkanData();
+        tampilkanData();
 
-    barcodeInput.value = "";
-    nameInput.value = "";
-    priceInput.value = "";
-    stockInput.value = "";
+        barcodeInput.value = "";
+        nameInput.value = "";
+        priceInput.value = "";
+        stockInput.value = "";
+
+    } catch (error) {
+        console.log(error);
+        alert("Server error");
+    }
 }
 
 
@@ -215,128 +164,110 @@ async function tambahBarang() {
 // ==========================
 async function tampilkanData() {
 
-    const response =
-    await fetch(
-        "https://kasir-production.up.railway.app/barang"
-    );
+    try {
 
-    const barang =
-    await response.json();
+        const response = await fetch(`${API_URL}/barang`);
 
-    const tbody =
-    document.getElementById(
-        "cart-items"
-    );
+        if (!response.ok) {
+            console.log("API Error");
+            return;
+        }
 
-    let data = "";
+        const barang = await response.json();
 
-    barang.forEach((item) => {
+        const tbody = document.getElementById("cart-items");
 
-        data += `
-        <tr onclick="
-            previewBarcode(
-                '${item.barcode}'
-            )
-        ">
+        let data = "";
 
-            <td>
-                ${item.barcode}
-            </td>
+        barang.forEach((item) => {
 
-            <td>
-                ${item.nama}
-            </td>
+            data += `
+            <tr onclick="previewBarcode('${item.barcode}')">
 
-            <td>
-                Rp
-                ${item.harga
-                .toLocaleString('id-ID')}
-            </td>
+                <td>${item.barcode}</td>
 
-            <td>
-                ${item.stok}
-            </td>
+                <td>${item.nama}</td>
 
-            <td>
+                <td>
+                    Rp ${item.harga.toLocaleString('id-ID')}
+                </td>
 
-            ${
-                currentRole === "admin"
+                <td>${item.stok}</td>
 
-                ?
+                <td>
 
-                `
-                <button
-                onclick="
-                event.stopPropagation();
-                hapusBarang(${item.id})
-                ">
-                    Hapus
-                </button>
-                `
+                ${
+                    currentRole === "admin"
 
-                :
+                    ?
 
-                `
-                <div class="qty-buttons">
-
+                    `
                     <button
                     onclick="
                     event.stopPropagation();
-                    kurangKeranjang(
-                        ${item.id}
-                    )
+                    hapusBarang(${item.id})
                     ">
-                        -
+                        Hapus
                     </button>
+                    `
 
-                    <button
-                    onclick="
-                    event.stopPropagation();
-                    tambahKeranjang(
-                        ${item.id},
-                        '${item.barcode}',
-                        '${item.nama}',
-                        ${item.harga}
-                    )
-                    ">
-                        +
-                    </button>
+                    :
 
-                </div>
-                `
-            }
+                    `
+                    <div class="qty-buttons">
 
-            </td>
+                        <button
+                        onclick="
+                        event.stopPropagation();
+                        kurangKeranjang(${item.id})
+                        ">
+                            -
+                        </button>
 
-        </tr>
-        `;
-    });
+                        <button
+                        onclick="
+                        event.stopPropagation();
+                        tambahKeranjang(
+                            ${item.id},
+                            '${item.barcode}',
+                            '${item.nama}',
+                            ${item.harga}
+                        )
+                        ">
+                            +
+                        </button>
 
-    tbody.innerHTML = data;
+                    </div>
+                    `
+                }
+
+                </td>
+
+            </tr>
+            `;
+        });
+
+        tbody.innerHTML = data;
+
+    } catch (error) {
+        console.log(error);
+    }
 }
 
 
 // ==========================
 // PREVIEW BARCODE
 // ==========================
-function previewBarcode(
-    barcode
-) {
+function previewBarcode(barcode) {
 
-    JsBarcode(
-        "#barcode-preview",
-        barcode,
-        {
-            format: "CODE128",
-            width: 2,
-            height: 70,
-            displayValue: true
-        }
-    );
+    JsBarcode("#barcode-preview", barcode, {
+        format: "CODE128",
+        width: 2,
+        height: 70,
+        displayValue: true
+    });
 
-    document.getElementById(
-        "barcode-text"
-    ).innerText = barcode;
+    document.getElementById("barcode-text").innerText = barcode;
 }
 
 
@@ -345,12 +276,9 @@ function previewBarcode(
 // ==========================
 async function hapusBarang(id) {
 
-    await fetch(
-        `https://kasir-production.up.railway.app/hapus-barang/${id}`,
-        {
-            method: "DELETE"
-        }
-    );
+    await fetch(`${API_URL}/hapus-barang/${id}`, {
+        method: "DELETE"
+    });
 
     tampilkanData();
 }
@@ -359,38 +287,25 @@ async function hapusBarang(id) {
 // ==========================
 // TAMBAH KERANJANG
 // ==========================
-function tambahKeranjang(
-    id,
-    barcode,
-    nama,
-    harga
-) {
+function tambahKeranjang(id, barcode, nama, harga) {
 
-    let item =
-    keranjang.find(
-        x => x.id === id
-    );
+    let item = keranjang.find(x => x.id === id);
 
     if (item) {
 
         item.jumlah++;
 
-        item.subtotal =
-        item.jumlah *
-        item.harga;
+        item.subtotal = item.jumlah * item.harga;
     }
 
     else {
 
         keranjang.push({
-
             id,
             barcode,
             nama,
             harga,
-
             jumlah: 1,
-
             subtotal: harga
         });
     }
@@ -404,25 +319,17 @@ function tambahKeranjang(
 // ==========================
 function kurangKeranjang(id) {
 
-    let item =
-    keranjang.find(
-        x => x.id === id
-    );
+    let item = keranjang.find(x => x.id === id);
 
     if (!item) return;
 
     item.jumlah--;
 
-    item.subtotal =
-    item.jumlah *
-    item.harga;
+    item.subtotal = item.jumlah * item.harga;
 
     if (item.jumlah <= 0) {
 
-        keranjang =
-        keranjang.filter(
-            x => x.id !== id
-        );
+        keranjang = keranjang.filter(x => x.id !== id);
     }
 
     tampilkanKeranjang();
@@ -434,10 +341,7 @@ function kurangKeranjang(id) {
 // ==========================
 function tampilkanKeranjang() {
 
-    const list =
-    document.getElementById(
-        "keranjang"
-    );
+    const list = document.getElementById("keranjang");
 
     let data = "";
     let total = 0;
@@ -451,59 +355,36 @@ function tampilkanKeranjang() {
             ${item.nama}
             (${item.jumlah}x)
             -
-            Rp
-            ${item.subtotal
-            .toLocaleString('id-ID')}
+            Rp ${item.subtotal.toLocaleString('id-ID')}
         </li>
         `;
     });
 
-    // DISKON
     let diskon = 0;
 
     if (total > 100000) {
-
-        diskon =
-        total * 0.10;
+        diskon = total * 0.10;
     }
 
-    // SETELAH DISKON
-    let setelahDiskon =
-    total - diskon;
+    let setelahDiskon = total - diskon;
 
-    // PPN
-    let ppn =
-    setelahDiskon * 0.11;
+    let ppn = setelahDiskon * 0.11;
 
-    // TOTAL
-    let totalAkhir =
-    setelahDiskon + ppn;
+    let totalAkhir = setelahDiskon + ppn;
 
     list.innerHTML = data;
 
-    document.getElementById(
-        "subtotal-price"
-    ).innerText =
-    `Rp ${total
-    .toLocaleString('id-ID')}`;
+    document.getElementById("subtotal-price").innerText =
+    `Rp ${total.toLocaleString('id-ID')}`;
 
-    document.getElementById(
-        "discount-price"
-    ).innerText =
-    `Rp ${diskon
-    .toLocaleString('id-ID')}`;
+    document.getElementById("discount-price").innerText =
+    `Rp ${diskon.toLocaleString('id-ID')}`;
 
-    document.getElementById(
-        "tax-price"
-    ).innerText =
-    `Rp ${ppn
-    .toLocaleString('id-ID')}`;
+    document.getElementById("tax-price").innerText =
+    `Rp ${ppn.toLocaleString('id-ID')}`;
 
-    document.getElementById(
-        "total-payment"
-    ).innerText =
-    `Rp ${totalAkhir
-    .toLocaleString('id-ID')}`;
+    document.getElementById("total-payment").innerText =
+    `Rp ${totalAkhir.toLocaleString('id-ID')}`;
 }
 
 
@@ -512,109 +393,77 @@ function tampilkanKeranjang() {
 // ==========================
 async function checkout() {
 
-    if (
-        keranjang.length === 0
-    ) {
-
-        alert(
-            "Keranjang kosong"
-        );
-
+    if (keranjang.length === 0) {
+        alert("Keranjang kosong");
         return;
     }
 
-    // HITUNG TOTAL
     let total = 0;
 
     keranjang.forEach((item) => {
-
         total += item.subtotal;
     });
 
-    // DISKON
     let diskon = 0;
 
     if (total > 100000) {
-
-        diskon =
-        total * 0.10;
+        diskon = total * 0.10;
     }
 
-    // SETELAH DISKON
-    let setelahDiskon =
-    total - diskon;
+    let setelahDiskon = total - diskon;
 
-    // PPN
-    let ppn =
-    setelahDiskon * 0.11;
+    let ppn = setelahDiskon * 0.11;
 
-    // TOTAL AKHIR
-    let totalAkhir =
-    setelahDiskon + ppn;
+    let totalAkhir = setelahDiskon + ppn;
 
-    // CHECKOUT DATABASE
-    await fetch(
-        "https://kasir-production.up.railway.app/checkout",
-        {
-            method:"POST",
+    try {
 
-            headers:{
-                "Content-Type":
-                "application/json"
+        await fetch(`${API_URL}/checkout`, {
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
             },
 
-            body:
-            JSON.stringify(
-                keranjang
-            )
-        }
-    );
+            body: JSON.stringify(keranjang)
+        });
 
-    // MIDTRANS
-    const response =
-    await fetch(
-        "https://kasir-production.up.railway.app/payment",
-        {
-            method:"POST",
+        const response = await fetch(`${API_URL}/payment`, {
+            method: "POST",
 
-            headers:{
-                "Content-Type":
-                "application/json"
+            headers: {
+                "Content-Type": "application/json"
             },
 
-            body:
-            JSON.stringify({
-                total:
-                Math.round(totalAkhir)
+            body: JSON.stringify({
+                total: Math.round(totalAkhir)
             })
+        });
+
+        const result = await response.json();
+
+        buatStruk();
+
+        if (result.redirect_url) {
+
+            window.location.href = result.redirect_url;
+
+        } else {
+
+            console.log(result);
+            alert("Payment gagal");
         }
-    );
 
-    const result =
-    await response.json();
+        keranjang = [];
 
-    // STRUK
-    buatStruk();
+        tampilkanKeranjang();
 
-    // MIDTRANS REDIRECT
-    if (result.redirect_url) {
+        tampilkanData();
 
-        window.location.href =
-        result.redirect_url;
-
-    } else {
-
-        console.log(result);
-
-        alert("Payment gagal");
+    } catch (error) {
+        console.log(error);
+        alert("Checkout gagal");
     }
-
-    // RESET
-    keranjang = [];
-
-    tampilkanKeranjang();
-
-    tampilkanData();
 }
 
 
@@ -623,10 +472,7 @@ async function checkout() {
 // ==========================
 function buatStruk() {
 
-    const receipt =
-    document.getElementById(
-        "receipt-content"
-    );
+    const receipt = document.getElementById("receipt-content");
 
     let html = "";
     let total = 0;
@@ -644,87 +490,45 @@ function buatStruk() {
             </span>
 
             <span>
-                Rp
-                ${item.subtotal
-                .toLocaleString('id-ID')}
+                Rp ${item.subtotal.toLocaleString('id-ID')}
             </span>
 
         </div>
         `;
     });
 
-    // DISKON
     let diskon = 0;
 
     if (total > 100000) {
-
-        diskon =
-        total * 0.10;
+        diskon = total * 0.10;
     }
 
-    // SETELAH DISKON
-    let setelahDiskon =
-    total - diskon;
+    let setelahDiskon = total - diskon;
 
-    // PPN
-    let ppn =
-    setelahDiskon * 0.11;
+    let ppn = setelahDiskon * 0.11;
 
-    // TOTAL AKHIR
-    let totalAkhir =
-    setelahDiskon + ppn;
+    let totalAkhir = setelahDiskon + ppn;
 
     html += `
 
     <div class="receipt-item">
-
-        <span>
-            Subtotal
-        </span>
-
-        <span>
-            Rp
-            ${total
-            .toLocaleString('id-ID')}
-        </span>
-
+        <span>Subtotal</span>
+        <span>Rp ${total.toLocaleString('id-ID')}</span>
     </div>
 
     <div class="receipt-item">
-
-        <span>
-            Diskon
-        </span>
-
-        <span>
-            Rp
-            ${diskon
-            .toLocaleString('id-ID')}
-        </span>
-
+        <span>Diskon</span>
+        <span>Rp ${diskon.toLocaleString('id-ID')}</span>
     </div>
 
     <div class="receipt-item">
-
-        <span>
-            PPN 11%
-        </span>
-
-        <span>
-            Rp
-            ${ppn
-            .toLocaleString('id-ID')}
-        </span>
-
+        <span>PPN 11%</span>
+        <span>Rp ${ppn.toLocaleString('id-ID')}</span>
     </div>
 
     <div class="receipt-total">
-
         TOTAL :
-        Rp
-        ${totalAkhir
-        .toLocaleString('id-ID')}
-
+        Rp ${totalAkhir.toLocaleString('id-ID')}
     </div>
     `;
 
@@ -737,25 +541,15 @@ function buatStruk() {
 // ==========================
 function printStruk() {
 
-    const isi =
-    document.getElementById(
-        "receipt-box"
-    ).innerHTML;
+    const isi = document.getElementById("receipt-box").innerHTML;
 
-    const win =
-    window.open(
-        "",
-        "",
-        "width=400,height=700"
-    );
+    const win = window.open("", "", "width=400,height=700");
 
     win.document.write(`
         <html>
 
         <head>
-            <title>
-                Print Struk
-            </title>
+            <title>Print Struk</title>
         </head>
 
         <body>
@@ -776,15 +570,11 @@ function printStruk() {
 // ==========================
 window.onload = () => {
 
-    const savedRole =
-    localStorage.getItem(
-        "role"
-    );
+    const savedRole = localStorage.getItem("role");
 
     if (savedRole) {
 
-        currentRole =
-        savedRole;
+        currentRole = savedRole;
 
         masukAplikasi();
     }
