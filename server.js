@@ -9,7 +9,9 @@ const midtransClient = require("midtrans-client");
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: "https://kasir-app-production-777.up.railway.app"
+}));
 app.use(express.json());
 app.use(express.static("public"));
 
