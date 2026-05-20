@@ -43,7 +43,6 @@ db.connect((err) => {
   }
 
   console.log("MySQL Connected");
-});
 
 // ==========================
 // AUTO CREATE TABLE
@@ -68,6 +67,8 @@ CREATE TABLE IF NOT EXISTS transaksi (
     subtotal INT
 )
 `);
+
+});
 
 // ==========================
 // MIDTRANS
