@@ -262,8 +262,8 @@ function previewBarcode(barcode) {
 
     JsBarcode("#barcode-preview", barcode, {
         format: "CODE128",
-        width: 2,
-        height: 70,
+        width: 1.5,
+        height: 60,
         displayValue: true
     });
 
