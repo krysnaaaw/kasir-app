@@ -230,7 +230,7 @@ h1{
     padding:25px;
     text-align:center;
     box-shadow:8px 8px 0px rgba(90,70,52,0.12);
-    overflow-x: auto;
+    overflow-x:auto;
 }
 
 .barcode-box h3{
@@ -307,7 +307,6 @@ tr:hover{
 ========================= */
 
 td button{
-    background:#8b2e2e;
     color:white;
     border:none;
     padding:10px 16px;
@@ -315,10 +314,6 @@ td button{
     font-family:'Special Elite', cursive;
     transition:0.3s;
     margin:2px;
-}
-
-td button:hover{
-    background:#641f1f;
 }
 
 .qty-buttons{
@@ -332,6 +327,50 @@ td button:hover{
     height:42px;
     font-size:20px;
     font-weight:bold;
+    background:#5a4634;
+}
+
+.qty-buttons button:hover{
+    background:#3e3024;
+}
+
+
+/* =========================
+   ADMIN BUTTONS
+========================= */
+
+.admin-buttons{
+    display:flex;
+    justify-content:center;
+    gap:8px;
+}
+
+.admin-buttons button{
+    padding:10px 14px;
+    border:none;
+    cursor:pointer;
+    font-family:'Special Elite', cursive;
+    transition:0.3s;
+}
+
+/* BUTTON TAMBAH STOK */
+.admin-buttons button:first-child{
+    background:#5c7a43;
+    color:white;
+}
+
+.admin-buttons button:first-child:hover{
+    background:#445a31;
+}
+
+/* BUTTON HAPUS */
+.admin-buttons button:last-child{
+    background:#8b2e2e;
+    color:white;
+}
+
+.admin-buttons button:last-child:hover{
+    background:#641f1f;
 }
 
 
@@ -524,6 +563,10 @@ td button:hover{
     }
 
     .qty-buttons{
+        flex-direction:column;
+    }
+
+    .admin-buttons{
         flex-direction:column;
     }
 }

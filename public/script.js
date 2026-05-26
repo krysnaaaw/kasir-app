@@ -202,13 +202,24 @@ async function tampilkanData() {
                     ?
 
                     `
-                    <button
-                    onclick="
-                    event.stopPropagation();
-                    hapusBarang(${item.id})
-                    ">
-                        Hapus
-                    </button>
+                    <div class="admin-buttons">
+
+                        <button
+                        onclick="
+                        event.stopPropagation();
+                        tambahStok(${item.id})
+                        ">
+                        + Stok
+                        </button>
+
+                        <button
+                        onclick="
+                        event.stopPropagation();
+                        hapusBarang(${item.id})
+                        ">
+                            Hapus
+                        </button>
+                    </div>
                     `
 
                     :
@@ -283,6 +294,48 @@ async function hapusBarang(id) {
     tampilkanData();
 }
 
+// ==========================
+// TAMBAH STOK
+// ==========================
+async function tambahStok(id) {
+
+    const jumlah = prompt("Tambah stok berapa?");
+
+    if (!jumlah || isNaN(jumlah)) {
+        alert("Input tidak valid");
+        return;
+    }
+
+    try {
+
+        const response = await fetch(
+            `${API_URL}/tambah-stok/${id}`,
+            {
+                method: "PUT",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    jumlah: parseInt(jumlah)
+                })
+            }
+        );
+
+        if (!response.ok) {
+            alert("Gagal tambah stok");
+            return;
+        }
+
+        tampilkanData();
+
+    } catch (error) {
+
+        console.log(error);
+        alert("Server error");
+    }
+}
 
 // ==========================
 // TAMBAH KERANJANG

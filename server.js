@@ -189,6 +189,33 @@ app.delete("/hapus-barang/:id", (req, res) => {
 });
 
 // ==========================
+// TAMBAH STOK
+// ==========================
+app.put("/tambah-stok/:id", (req, res) => {
+
+  const id = req.params.id;
+
+  const { jumlah } = req.body;
+
+  db.query(`
+    UPDATE barang
+    SET stok = stok + ?
+    WHERE id = ?
+  `, [jumlah, id], (err) => {
+
+    if (err) {
+
+      console.log(err);
+
+      return res.status(500).send("Gagal tambah stok");
+    }
+
+    res.send("Stok berhasil ditambah");
+  });
+
+});
+
+// ==========================
 // CHECKOUT
 // ==========================
 app.post("/checkout", (req, res) => {
